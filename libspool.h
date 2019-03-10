@@ -10,13 +10,13 @@
 
 #include <stdlib.h>
 
+#define flip_bit(n, b) (n ^= pow2(b))
+
 #define pool_get(i, p) (p->pool[i])
 #define pool_astype(i, t) (*(t*)i)
 #define pool_first(p) lsb(p->avail^0xFFFF)
 #define pool_foreach(p) int ind;for(ind=pool_first(p);p->avail<0xFFFF&&ind<p->size;ind=next_unset_bit(p->avail,ind))
 #define pool_foreach_nodecl(p) for(ind=pool_first(p);p->avail<0xFFFF&&ind<p->size;ind=next_unset_bit(p->avail,ind)) /* If ANSI/C99/C11 compliance is necessary */
-
-#define flip_bit(n, b) (n ^= pow2(b))
 
 typedef struct pool {
   int ind;     /* Index of first available slot (least significant bit) */
@@ -28,10 +28,12 @@ typedef struct pool {
 static int pow2(int n);
 static int lsb(int n);
 static int bits_set(int n);
+static int set_all(int size);
 static int next_unset_bit(int n, int start);
 
 static pool *pool_init();
 static void pool_push(void *data, pool *p);
+/* pool_pop(int ind, pool *p); - Defined as macro*/
 static int  pool_adj(int ind, int dir, pool *p);
 static int  pool_find(void *data, pool *p);
 static int  pool_check(int ind, pool *p);
@@ -81,21 +83,23 @@ int bits_set(int n){
 }
 
 /*
+ * Returns an integer with all bits
+ * to the right of a given value
+ * set to 1
+ */
+int set_all(int size){
+  return (1 << size) - 1;
+}
+
+/*
  * Returns the position of the next bit
  * equal to zero moving right-to-left
  * from a given starting point
- * TODO: Unroll
  */
 int next_unset_bit(int n, int start){
   unsigned int flip = ~n;
-  int p = start+1;
-  while(flip >>= 1){
-    if((n & (1 << p)) >> p == 0){
-      break;
-    }
-    p++;
-  }
-  return p;
+  flip >>= start+1;
+  return lsb(flip)+start+1;
 }
 
 /***/
@@ -109,7 +113,7 @@ pool *pool_init(int size){
   pool *p = malloc(sizeof(pool));
   p->ind = 0;
   p->size = size;
-  p->avail = 0xFFFF;
+  p->avail = set_all(size);
   p->pool = malloc(sizeof(void*)*size);
 
   return p;
@@ -122,13 +126,14 @@ pool *pool_init(int size){
  * old entries if enabled)
  */
 void pool_push(void *data, pool *p){
+  if(p->ind == -1){
+    puts("Out of memory.");
+    return;
+  }
+
   flip_bit(p->avail, p->ind);
   p->pool[p->ind] = data;
   p->ind = lsb(p->avail);
-
-  if(p->ind == -1){
-    puts("Out of memory.");
-  }
 }
 
 /*

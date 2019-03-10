@@ -3,10 +3,10 @@ all: test
 CC=gcc
 
 LIBS=
-CFLAGS=
+CFLAGS=-Wno-int-to-pointer-cast -Wno-pointer-to-int-cast
 
-FLAGS=-O3 -pipe -s
-DEBUGFLAGS=-Og -pipe -g
+FLAGS=-O3 -pipe -s -ansi -pedantic
+DEBUGFLAGS=-Og -pipe -g -ansi -pedantic
 
 INPUT=test.c
 OUTPUT=libspool_test
