@@ -4,14 +4,15 @@ A small, single-header memory pool implementation.
 
 ## Why
 
-libspool aims to be a relatively fast solution to situations which require some form of dynamic memory allocation.  It accomplishes this by avoiding individual calls to `malloc()` and `free()`, instead opting for a single call to each, at pool creation and destruction respectively.
+libspool aims to be a relatively fast solution for situations which require some form of dynamic memory allocation.  It accomplishes this by avoiding individual calls to `malloc()` and `free()`, instead opting for a single call to each, at pool creation and destruction respectively.
 
-libspool was developed to replace the linked list implementation used by my window manager ![ntwm](https://github.com/Cubified/ntwm), and its limited use has already seen an improvement in speed and memory usage (albeit fairly minor).
+libspool was developed to replace the linked list implementation used by my window manager [ntwm](https://github.com/Cubified/ntwm), and its limited use has already seen an improvement in speed and memory usage (albeit fairly minor).
 
 ## Example
 
 Barebones usage of libspool is as follows:
 
+```c
      int n = 5;
 
      void *d;
@@ -29,6 +30,8 @@ Barebones usage of libspool is as follows:
      }
 
      pool_free(p);             /* Frees the entire pool - free() is called once here */
+
+```
 
 ## Testing
 
